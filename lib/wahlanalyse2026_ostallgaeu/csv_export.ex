@@ -153,6 +153,11 @@ defmodule Wahlanalyse2026Ostallgaeu.CsvExport do
 
   defp format_float(nil), do: ""
   defp format_float(value) when is_float(value) do
+    # Format with one decimal place, using comma as decimal separator for German Excel
+    formatted = :erlang.float_to_binary(value, [decimals: 1])
+    String.replace(formatted, ".", ",")
+  end
+  defp format_float(value) when is_float(value) do
     # Format with one decimal place
     :erlang.float_to_binary(value, [decimals: 1])
   end

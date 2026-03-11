@@ -30,7 +30,7 @@ defmodule Mix.Tasks.Export.Csv do
     csv_string = Wahlanalyse2026Ostallgaeu.CsvExport.generate_csv(areas)
 
     # Write to file
-    filepath = Path.join(File.cwd!(), "results/analyse.csv")
+    filepath = Path.join(File.cwd!(), "docs/kreistag2026.csv")
     Logger.info("Writing CSV to: #{filepath}")
 
     case Wahlanalyse2026Ostallgaeu.CsvExport.write_to_file(csv_string, filepath) do

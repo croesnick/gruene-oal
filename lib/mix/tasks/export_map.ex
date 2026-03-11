@@ -137,7 +137,7 @@ defmodule Mix.Tasks.Wahlanalyse2026Ostallgaeu.ExportMap do
     </html>
     """
 
-    File.write!("results/karte_gruene.html", html)
+    File.write!("docs/kreistag2026.html", html)
   end
 
   defp generate_afd_map(matched_data) do
@@ -244,6 +244,6 @@ defmodule Mix.Tasks.Wahlanalyse2026Ostallgaeu.ExportMap do
     </html>
     """
 
-    File.write!("results/karte_afd.html", html)
+    File.write!("docs/karte_afd.html", html)
   end
 end

@@ -2,6 +2,21 @@ defmodule Wahlanalyse2026Ostallgaeu.Area do
   @moduledoc """
   Struct representing an electoral area (Kreis, Gemeinde, Stimmbezirk, etc.)
   """
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :type,
+             :name,
+             :parent_id,
+             :children,
+             :wahlbeteiligung,
+             :stimmberechtigte,
+             :waehler,
+             :ungueltige,
+             :gueltige,
+             :parteien,
+             :ergebnis_stand
+           ]}
 
   @type area_type :: :kreis | :gemeinde | :verbandsgemeinde | :stimmbezirk | :briefwahlbezirk
 

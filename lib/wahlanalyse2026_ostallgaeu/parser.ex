@@ -34,43 +34,55 @@ defmodule Wahlanalyse2026Ostallgaeu.Parser do
     |> do_parse_german_number()
   end
 
-  defp do_parse_german_number(""), do: 0
+  defp do_parse_german_number("") do
+    0
+  end
 
   defp do_parse_german_number(string) do
-    # Check for German decimal comma: "37,3" or "1,416"
-    if String.contains?(string, ",") do
-      # German format: remove thousands separators (dots), convert comma to dot
-      string
-      |> String.replace(".", "")
-      |> String.replace(",", ".")
-      |> String.to_float()
+    # Check for scientific notation first (e.g., "0E-10", "1E2", "1.5E-2")
+    if String.contains?(string, "E") or String.contains?(string, "e") do
+      # Handle scientific notation - Float.parse handles "0E-10" format
+      case Float.parse(string) do
+        {value, ""} -> value
+        {value, _rest} -> value
+        :error -> 0.0
+      end
     else
-      # No comma - could be English decimal ("70.0") or German thousands ("1.416")
-      dot_count = String.graphemes(string) |> Enum.count(&(&1 == "."))
+      # Check for German decimal comma: "37,3" or "1,416"
+      if String.contains?(string, ",") do
+        # German format: remove thousands separators (dots), convert comma to dot
+        string
+        |> String.replace(".", "")
+        |> String.replace(",", ".")
+        |> String.to_float()
+      else
+        # No comma - could be English decimal ("70.0") or German thousands ("1.416")
+        dot_count = String.graphemes(string) |> Enum.count(&(&1 == "."))
 
-      cond do
-        # Multiple dots: German thousands "1.416.311" -> 1416311
-        dot_count > 1 ->
-          String.replace(string, ".", "")
-          |> String.to_integer()
-
-        # Single dot: check if it's German thousands or English decimal
-        dot_count == 1 ->
-          [before_dot, after_dot] = String.split(string, ".")
-
-          # German thousands: exactly 3 digits after dot, and before is 1-3 digits
-          # e.g., "1.416" -> 1416, "140.424" -> 140424
-          if String.length(after_dot) == 3 and String.length(before_dot) <= 3 do
+        cond do
+          # Multiple dots: German thousands "1.416.311" -> 1416311
+          dot_count > 1 ->
             String.replace(string, ".", "")
             |> String.to_integer()
-          else
-            # English decimal: "70.0" -> 70.0, "43.68" -> 43.68
-            String.to_float(string)
-          end
 
-        # No dot: plain integer
-        true ->
-          String.to_integer(string)
+          # Single dot: check if it's German thousands or English decimal
+          dot_count == 1 ->
+            [before_dot, after_dot] = String.split(string, ".")
+
+            # German thousands: exactly 3 digits after dot, and before is 1-3 digits
+            # e.g., "1.416" -> 1416, "140.424" -> 140424
+            if String.length(after_dot) == 3 and String.length(before_dot) <= 3 do
+              String.replace(string, ".", "")
+              |> String.to_integer()
+            else
+              # English decimal: "70.0" -> 70.0, "43.68" -> 43.68
+              String.to_float(string)
+            end
+
+          # No dot: plain integer
+          true ->
+            String.to_integer(string)
+        end
       end
     end
   end
@@ -209,7 +221,8 @@ defmodule Wahlanalyse2026Ostallgaeu.Parser do
           _ -> nil
         end
 
-          _ -> nil
+      _ ->
+        nil
     end
   end
 
@@ -295,6 +308,7 @@ defmodule Wahlanalyse2026Ostallgaeu.Parser do
       _ -> short_name
     end
   end
+
   defp extract_parent_id(document) do
     # Look for parent URL in breadcrumb (the LAST link before current area)
     # DOM structure: .breadcrumb > ul > li > a (text) + li > span (empty)
@@ -309,7 +323,9 @@ defmodule Wahlanalyse2026Ostallgaeu.Parser do
               [href | _] when is_binary(href) -> href
               _ -> nil
             end
-          _ -> nil
+
+          _ ->
+            nil
         end
       end)
       |> Enum.filter(& &1)
@@ -338,9 +354,13 @@ defmodule Wahlanalyse2026Ostallgaeu.Parser do
               [href | _] when is_binary(href) ->
                 text = Floki.text(a_element)
                 %{href: href, text: text}
-              _ -> nil
+
+              _ ->
+                nil
             end
-          _ -> nil
+
+          _ ->
+            nil
         end
       end)
       |> Enum.filter(& &1)

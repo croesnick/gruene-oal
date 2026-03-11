@@ -46,6 +46,22 @@ defmodule Wahlanalyse2026Ostallgaeu.ParserTest do
     test "handles negative numbers" do
       assert Parser.parse_german_number("-4,1") == -4.1
     end
+
+    test "handles scientific notation (0E-10) as zero" do
+      assert Parser.parse_german_number("0E-10") == 0.0
+    end
+
+    test "handles scientific notation with positive exponent" do
+      assert Parser.parse_german_number("1E2") == 100.0
+    end
+
+    test "handles scientific notation with negative exponent" do
+      assert Parser.parse_german_number("1E-2") == 0.01
+    end
+
+    test "handles scientific notation with decimal" do
+      assert Parser.parse_german_number("1.5E2") == 150.0
+    end
   end
 
   describe "parse_kreis/1" do
